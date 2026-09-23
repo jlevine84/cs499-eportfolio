@@ -5,49 +5,67 @@ require("../models/log");  // Ensures audit log schema is loaded
 const Model = mongoose.model("trips"); // Unified model reference for all CRUD operations
 const Log = mongoose.model("logs");   // Audit log model reference
 
-// GET endpoint: /trips - Get a list of trips with optional pagination & search
+// GET endpoint: /trips - Paginated & Sorted Trips
 const tripsList = async (req, res) => {
     try {
-        // If page or limit params are provided, apply pagination
-        if (req.query.page || req.query.limit) {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 6;
-            const skip = (page - 1) * limit;
-            const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 6;
+        const search = req.query.search || "";
+        const sort = req.query.sort || "name-asc";
 
-            // Search filter by name, resort, or code
-            const filter = search ? {
-                $or: [
-                    { name: { $regex: search,$options: "i" } },
-                    { resort: { $regex: search,$options: "i" } },
-                    { code: { $regex: search,$options: "i" } }
-                ]
-            } : {};
+        const skip = (page - 1) * limit;
 
-            const trips = await Model.find(filter)
-                .skip(skip)
-                .limit(limit)
-                .exec();
+        const query = search
+            ? {
+                  $or: [
+                      { name: { $regex: search, $options: "i" } },
+                      { code: { $regex: search, $options: "i" } }
+                  ]
+              }
+            : {};
 
-            const totalTrips = await Model.countDocuments(filter);
-
-            return res.status(200).json({
-                trips,
-                currentPage: page,
-                totalPages: Math.ceil(totalTrips / limit) || 1,
-                totalRecords: totalTrips
-            });
+        // Parse sorting directive
+        let sortOption = {};
+        switch (sort) {
+            case "name-desc":
+                sortOption = { name: -1 };
+                break;
+            case "price-asc":
+                sortOption = { numericPrice: 1 };
+                break;
+            case "price-desc":
+                sortOption = { numericPrice: -1 };
+                break;
+            case "name-asc":
+            default:
+                sortOption = { name: 1 };
+                break;
         }
 
-        // Default behavior: return all trips (unpaginated)
-        const query = await Model.find({}).exec();
-        if (!query || query.length === 0) {
-            return res.status(404).json({ error: "No trips found." });
-        }
-        return res.status(200).json(query);
+        // Use aggregation pipeline to cast string prices on the fly if needed
+        const trips = await Model.aggregate([
+            { $match: query },
+            { 
+                $addFields: { 
+                    numericPrice: { $toDouble: "$perPerson" } 
+                } 
+            },
+            { $sort: sortOption },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
 
+        const totalRecords = await Model.countDocuments(query);
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return res.status(200).json({
+            trips,
+            currentPage: page,
+            totalPages,
+            totalRecords
+        });
     } catch (err) {
-        console.error("Error retrieving trips:", err);
+        console.error("Error fetching trips:", err);
         return res.status(500).json({ error: err.message });
     }
 };
@@ -70,30 +88,45 @@ const tripsFindByCode = async (req, res) => {
     }
 };
 
+// Helper function to fetch the next sequential logID
+const getNextLogId = async () => {
+    const lastLog = await Log.findOne({}, { logID: 1 }).sort({ logID: -1 }).lean().exec();
+    return lastLog && typeof lastLog.logID === 'number' ? lastLog.logID + 1 : 1;
+};
+
 // POST endpoint: /trips - Add a new trip
 const tripsAddTrip = async (req, res) => {
     try {
-        const newTrip = new Model({
+        const tripDoc = {
             code: req.body.code,
             name: req.body.name,
             length: req.body.length,
-            start: req.body.start,
+            start: new Date(req.body.start),
             resort: req.body.resort,
             perPerson: req.body.perPerson,
             image: req.body.image,
             description: req.body.description
-        });
+        };
 
-        const savedTrip = await newTrip.save();
+        // Insert new trip via native driver
+        const insertResult = await Model.collection.insertOne(tripDoc);
 
-        // Audit Log Entry
-        await Log.create({
+        // Fetch created document
+        const savedTrip = await Model.findById(insertResult.insertedId).exec();
+
+        // Compute next sequential logID to prevent unique constraint conflicts
+        const nextId = await getNextLogId();
+
+        // Native driver insertion for Audit Log with logID populated
+        await Log.collection.insertOne({
+            logID: nextId,
             user: req.user ? req.user.email : "System",
             action: "CREATE",
             endpoint: `POST /api/trips`,
             status: "201 Created",
             description: `Created new trip package: ${savedTrip.code}`,
-            details: { code: savedTrip.code, name: savedTrip.name }
+            details: { code: savedTrip.code, name: savedTrip.name },
+            timeStamp: new Date()
         });
 
         return res.status(201).json(savedTrip);
@@ -158,25 +191,45 @@ const tripsUpdateTrip = async (req, res) => {
     }
 };
 
-// DELETE endpoint: /trips/{code} - Delete a specific trip
+// DELETE endpoint: /trips/{code} - Remove a trip package
 const tripsDeleteTrip = async (req, res) => {
     try {
-        const deletedTrip = await Model.findOneAndDelete({ "code": req.params.tripCode }).exec();
+        const tripCode = req.params.tripCode;
 
-        if (!deletedTrip) {
+        // Locate the trip package first to capture details for audit logging
+        const existingTrip = await Model.findOne({ code: tripCode }).exec();
+
+        if (!existingTrip) {
             return res.status(404).json({ error: "Trip code not found to delete." });
         }
 
-        // Audit Log Entry
-        await Log.create({
+        // Perform native driver deletion to bypass mongoose hooks
+        const deleteResult = await Model.collection.deleteOne({ code: tripCode });
+
+        if (deleteResult.deletedCount === 0) {
+            return res.status(400).json({ error: "Failed to delete trip record." });
+        }
+
+        // Compute next logID sequence number
+        const nextLogId = await getNextLogId();
+
+        // Native driver insertion for Audit Log with logID populated
+        await Log.collection.insertOne({
+            logID: nextLogId,
             user: req.user ? req.user.email : "System",
             action: "DELETE",
-            endpoint: `DELETE /api/trips/${req.params.tripCode}`,
+            endpoint: `DELETE /api/trips/${tripCode}`,
             status: "200 OK",
-            description: `Deleted trip package: ${req.params.tripCode}`
+            description: `Deleted trip package: ${existingTrip.name} (${tripCode})`,
+            details: {
+                code: existingTrip.code,
+                name: existingTrip.name,
+                perPerson: existingTrip.perPerson
+            },
+            timeStamp: new Date()
         });
 
-        return res.status(200).json({ message: "Trip successfully deleted.", code: req.params.tripCode });
+        return res.status(200).json({ message: `Trip ${tripCode} deleted successfully.` });
 
     } catch (err) {
         console.error("Error deleting trip:", err);

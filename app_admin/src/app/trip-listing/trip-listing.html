@@ -9,7 +9,12 @@
                 placeholder="Search by name or code..." 
                 [value]="searchQuery()"
                 (input)="onSearch($event)">
-            <select><option>Sort By: Name</option><option>Sort By: Price</option></select>
+            <select class="sort-select" (change)="onSort($event)">
+                <option value="name-asc">Sort By: Name (A-Z)</option>
+                <option value="name-desc">Sort By: Name (Z-A)</option>
+                <option value="price-asc">Sort By: Price (Low to High)</option>
+                <option value="price-desc">Sort By: Price (High to Low)</option>
+            </select>
             <button class="btn btn-primary" (click)="addTrip()" style="flex: initial;">+ New Trip</button>
         </div>
         
@@ -103,8 +108,16 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Package Modifications</button>
-                    <button type="button" class="btn btn-secondary" (click)="onReset()">Reset</button>
+                    <!-- Primary & Secondary Form Actions -->
+                    <div class="primary-actions">
+                        <button type="submit" class="btn btn-primary">Save Package Modifications</button>
+                        <button type="button" class="btn btn-secondary" (click)="onReset()">Reset</button>
+                    </div>
+
+                    <!-- Destructive Action Isolated -->
+                    <button type="button" class="btn btn-danger" (click)="onDelete(selected.code)">
+                        Delete Package
+                    </button>
                 </div>
             </form>
         } @else {

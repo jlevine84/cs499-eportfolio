@@ -119,35 +119,43 @@ export class TripListing implements OnInit {
         }
     }
 
-    // Fetch paginated trips from API
-    public loadTrips(): void {
-        this.tripData.getPaginatedTrips(
-            this.currentPage(),
-            this.pageSize(),
-            this.searchQuery()
-        ).subscribe({
-            next: (res: PaginatedTripsResponse) => {
-                this.trips.set(res.trips);
-                this.currentPage.set(res.currentPage);
-                this.totalPages.set(res.totalPages);
-                this.totalRecords.set(res.totalRecords);
+	// Fetch paginated trips from API with server-side sorting
+	public loadTrips(): void {
+		this.tripData.getPaginatedTrips(
+			this.currentPage(),
+			this.pageSize(),
+			this.searchQuery(),
+			this.sortOption() // Pass active sort key
+		).subscribe({
+			next: (res: PaginatedTripsResponse) => {
+				this.trips.set(res.trips);
+				this.currentPage.set(res.currentPage);
+				this.totalPages.set(res.totalPages);
+				this.totalRecords.set(res.totalRecords);
 
-                if (res.trips.length > 0) {
-                    // Maintain selected item or select first item in new page
-                    if (!this.selectedTrip() || !res.trips.some(t => t.code === this.selectedTrip()?.code)) {
-                        this.onTripSelect(res.trips[0]);
-                    }
-                    this.message = `Displaying page ${res.currentPage} of ${res.totalPages}`;
-                } else {
-                    this.selectedTrip.set(null);
-                    this.message = 'No trip packages found.';
-                }
-            },
-            error: (error: any) => {
-                console.error('Error loading trips: ', error);
-            }
-        });
-    }
+				if (res.trips.length > 0) {
+					if (!this.selectedTrip() || !res.trips.some(t => t.code === this.selectedTrip()?.code)) {
+						this.onTripSelect(res.trips[0]);
+					}
+					this.message = `Displaying page ${res.currentPage} of ${res.totalPages}`;
+				} else {
+					this.selectedTrip.set(null);
+					this.message = 'No trip packages found.';
+				}
+			},
+			error: (error: any) => {
+				console.error('Error loading trips: ', error);
+			}
+		});
+	}
+
+	// Dropdown change handler
+	public onSort(event: Event): void {
+		const selectedValue = (event.target as HTMLSelectElement).value;
+		this.sortOption.set(selectedValue);
+		this.currentPage.set(1); // Reset to page 1 on sort change
+		this.loadTrips();        // Query backend for newly sorted dataset
+	}
 
     // Page Change Navigation Handler
     public goToPage(page: number): void {
@@ -163,6 +171,60 @@ export class TripListing implements OnInit {
         this.searchQuery.set(query);
         this.currentPage.set(1); // Reset to first page on search
         this.loadTrips();
+    }
+
+	public onDelete(tripCode: string): void {
+		if (!tripCode) return;
+
+		const confirmed = confirm(`Are you sure you want to delete trip ${tripCode}? This action cannot be undone.`);
+		if (!confirmed) return;
+
+		this.tripData.deleteTrip(tripCode).subscribe({
+			next: (response: any) => {
+				console.log('Trip deleted successfully:', response);
+				
+				// Clear current selection
+				this.selectedTrip.set(null);
+
+				// If we deleted the last item on a page, step back one page
+				if (this.trips().length === 1 && this.currentPage() > 1) {
+					this.currentPage.set(this.currentPage() - 1);
+				}
+
+				// Reload inventory
+				this.loadTrips();
+			},
+			error: (error: any) => {
+				console.error('Error deleting trip:', error);
+				alert(`Failed to delete trip: ${error.message || error}`);
+			}
+		});
+	}
+
+	// Sort option Signal state
+	sortOption: WritableSignal<string> = signal('name-asc');
+
+	// Sorts an array of trips in-place based on the active sort key
+    private applySorting(tripsList: Trip[]): Trip[] {
+        const option = this.sortOption();
+        return [...tripsList].sort((a, b) => {
+            // Safely parse numeric prices to avoid TS2362 type errors
+            const priceA = Number(a.perPerson) || 0;
+            const priceB = Number(b.perPerson) || 0;
+
+            switch (option) {
+                case 'name-asc':
+                    return a.name.localeCompare(b.name);
+                case 'name-desc':
+                    return b.name.localeCompare(a.name);
+                case 'price-asc':
+                    return priceA - priceB;
+                case 'price-desc':
+                    return priceB - priceA;
+                default:
+                    return 0;
+            }
+        });
     }
 
     ngOnInit(): void {

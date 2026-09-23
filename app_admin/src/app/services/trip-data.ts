@@ -46,10 +46,16 @@ export class TripData {
     /* Trip endpoints */
 
     // Get paginated trips & update the reactive signal state
-    public getPaginatedTrips(page: number = 1, limit: number = 6, search: string = ''): Observable<PaginatedTripsResponse> {
+    public getPaginatedTrips(
+        page: number = 1,
+        limit: number = 6,
+        search: string = '',
+        sort: string = 'name-asc'
+    ): Observable<PaginatedTripsResponse> {
         let params = new HttpParams()
             .set('page', page.toString())
-            .set('limit', limit.toString());
+            .set('limit', limit.toString())
+            .set('sort', sort);
 
         if (search) {
             params = params.set('search', search);
@@ -86,6 +92,15 @@ export class TripData {
                 this.trips.update(current => 
                     current.map(t => t.code === updatedTrip.code ? updatedTrip : t)
                 );
+            })
+        );
+    }
+
+    // Delete a trip (Authenticated Endpoint)
+    public deleteTrip(tripCode: string): Observable<any> {
+        return this.http.delete<any>(`${this.baseUrl}/trips/${tripCode}`, this.getAuthHeaders()).pipe(
+            tap(() => {
+                this.trips.update(current => current.filter(t => t.code !== tripCode));
             })
         );
     }
