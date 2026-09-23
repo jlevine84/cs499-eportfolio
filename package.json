@@ -17,6 +17,7 @@
     "http-errors": "~1.6.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
+    "mongoose-sequence": "^6.0.1",
     "morgan": "^1.10.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0"

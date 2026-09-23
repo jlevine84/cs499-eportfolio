@@ -5,20 +5,47 @@ require("../models/log");  // Ensures audit log schema is loaded
 const Model = mongoose.model("trips"); // Unified model reference for all CRUD operations
 const Log = mongoose.model("logs");   // Audit log model reference
 
-// GET endpoint: /trips - Get a list of all trips
+// GET endpoint: /trips - Get a list of trips with optional pagination & search
 const tripsList = async (req, res) => {
     try {
-        const query = await Model
-            .find({})
-            .exec();
+        // If page or limit params are provided, apply pagination
+        if (req.query.page || req.query.limit) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 6;
+            const skip = (page - 1) * limit;
+            const search = req.query.search || "";
 
-        // If no query response
+            // Search filter by name, resort, or code
+            const filter = search ? {
+                $or: [
+                    { name: { $regex: search,$options: "i" } },
+                    { resort: { $regex: search,$options: "i" } },
+                    { code: { $regex: search,$options: "i" } }
+                ]
+            } : {};
+
+            const trips = await Model.find(filter)
+                .skip(skip)
+                .limit(limit)
+                .exec();
+
+            const totalTrips = await Model.countDocuments(filter);
+
+            return res.status(200).json({
+                trips,
+                currentPage: page,
+                totalPages: Math.ceil(totalTrips / limit) || 1,
+                totalRecords: totalTrips
+            });
+        }
+
+        // Default behavior: return all trips (unpaginated)
+        const query = await Model.find({}).exec();
         if (!query || query.length === 0) {
             return res.status(404).json({ error: "No trips found." });
         }
-
-        // Return all trips
         return res.status(200).json(query);
+
     } catch (err) {
         console.error("Error retrieving trips:", err);
         return res.status(500).json({ error: err.message });
@@ -32,7 +59,6 @@ const tripsFindByCode = async (req, res) => {
             .find({ "code": req.params.tripCode })
             .exec();
 
-        // If no query response
         if (!query || query.length === 0) {
             return res.status(404).json({ error: "Trip not found with provided code." });
         }
@@ -47,7 +73,6 @@ const tripsFindByCode = async (req, res) => {
 // POST endpoint: /trips - Add a new trip
 const tripsAddTrip = async (req, res) => {
     try {
-        // Instantiate a new trip record
         const newTrip = new Model({
             code: req.body.code,
             name: req.body.name,
@@ -59,10 +84,9 @@ const tripsAddTrip = async (req, res) => {
             description: req.body.description
         });
 
-        // Save to MongoDB
         const savedTrip = await newTrip.save();
 
-        // Generate audit log record
+        // Audit Log Entry
         await Log.create({
             user: req.user ? req.user.email : "System",
             action: "CREATE",
@@ -72,7 +96,6 @@ const tripsAddTrip = async (req, res) => {
             details: { code: savedTrip.code, name: savedTrip.name }
         });
 
-        // Return 201 Created status
         return res.status(201).json(savedTrip);
 
     } catch (err) {
@@ -86,7 +109,6 @@ const tripsUpdateTrip = async (req, res) => {
     try {
         console.log("Locating and updating trip code:", req.params.tripCode);
         
-        // Find existing record first to compare values for audit logging
         const existingTrip = await Model.findOne({ "code": req.params.tripCode }).exec();
 
         if (!existingTrip) {
@@ -108,7 +130,7 @@ const tripsUpdateTrip = async (req, res) => {
             { new: true, runValidators: true }
         ).exec();
 
-        // Generate audit log record tracking price or general modification
+        // Audit Log Entry
         await Log.create({
             user: req.user ? req.user.email : "System",
             action: "UPDATE",
@@ -138,7 +160,7 @@ const tripsDeleteTrip = async (req, res) => {
             return res.status(404).json({ error: "Trip code not found to delete." });
         }
 
-        // Generate audit log record
+        // Audit Log Entry
         await Log.create({
             user: req.user ? req.user.email : "System",
             action: "DELETE",

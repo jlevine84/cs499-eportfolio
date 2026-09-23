@@ -1,0 +1,252 @@
+[
+    {
+        "code": "GALR210214",
+        "name": "Gale Reef",
+        "length": "4 nights / 5 days",
+        "start": "2026-02-14T08:00:00Z",
+        "resort": "Emerald Bay, 3 stars",
+        "perPerson": "799.00",
+        "image": "reef1.jpg",
+        "description": "<p>Sed et augue lorem. In sit amet placerat arcu. Mauris volutpat ipsum ac justo mollis vel vestibulum orci gravida.</p>"
+    },
+    {
+        "code": "DAWR210315",
+        "name": "Dawson's Reef",
+        "length": "4 nights / 5 days",
+        "start": "2026-03-15T08:00:00Z",
+        "resort": "Blue Lagoon, 4 stars",
+        "perPerson": "1199.00",
+        "image": "reef2.jpg",
+        "description": "<p>Integer magna leo, posuere et dignissim vitae, porttitor at odio. Pellentesque a metus nec magna placerat volutpat.</p>"
+    },
+    {
+        "code": "CLAR210621",
+        "name": "Claire's Reef",
+        "length": "4 nights / 5 days",
+        "start": "2026-06-21T08:00:00Z",
+        "resort": "Coral Sands, 5 stars",
+        "perPerson": "1999.00",
+        "image": "reef3.jpg",
+        "description": "<p>Donec sed felis risus. Nulla facilisi. Donec a orci tellus, et auctor odio. Fusce ac orci nibh, quis semper arcu.</p>"
+    },
+    {
+        "code": "MEGR220119",
+        "name": "Mega Reef",
+        "length": "6 nights / 7 days",
+        "start": "2026-01-19T08:00:00Z",
+        "resort": "Barrier Island Resort, 5 stars",
+        "perPerson": "3499.00",
+        "image": "reef4.jpg",
+        "description": "<p>The great barrier reef awaits!... and maybe a shark.</p>"
+    },
+    {
+        "code": "AZUR260410",
+        "name": "Azure Cove",
+        "length": "5 nights / 6 days",
+        "start": "2026-04-10T08:00:00Z",
+        "resort": "Sapphire Springs, 4 stars",
+        "perPerson": "1350.00",
+        "image": "reef2.jpg",
+        "description": "<p>Explore crystal clear turquoise waters and vibrant marine ecosystems in this tropical oasis getaway.</p>"
+    },
+    {
+        "code": "CORR260502",
+        "name": "Coral Kingdom",
+        "length": "7 nights / 8 days",
+        "start": "2026-05-02T08:00:00Z",
+        "resort": "Palace of Palms, 5 stars",
+        "perPerson": "2850.00",
+        "image": "reef1.jpg",
+        "description": "<p>Luxury at its finest with guided scuba diving tours and private overwater bungalows.</p>"
+    },
+    {
+        "code": "SUNR260518",
+        "name": "Sunken Cay",
+        "length": "3 nights / 4 days",
+        "start": "2026-05-18T08:00:00Z",
+        "resort": "Sandy Toes Lodge, 3 stars",
+        "perPerson": "650.00",
+        "image": "reef4.jpg",
+        "description": "<p>A quick escape for beach lovers seeking secluded shores and vibrant sunset views.</p>"
+    },
+    {
+        "code": "MYSR260601",
+        "name": "Mystic Atoll",
+        "length": "6 nights / 7 days",
+        "start": "2026-06-01T08:00:00Z",
+        "resort": "Lagoon Haven, 4 stars",
+        "perPerson": "1780.00",
+        "image": "reef3.jpg",
+        "description": "<p>Discover hidden shipwrecks and shallow coral gardens perfect for ocean snorkeling enthusiasts.</p>"
+    },
+    {
+        "code": "STAR260615",
+        "name": "Starfish Point",
+        "length": "4 nights / 5 days",
+        "start": "2026-06-15T08:00:00Z",
+        "resort": "Ocean Edge Retreat, 3 stars",
+        "perPerson": "890.00",
+        "image": "reef1.jpg",
+        "description": "<p>Unwind on shallow sandbars lined with starfish and gentle sea breezes.</p>"
+    },
+    {
+        "code": "PELR260704",
+        "name": "Pelican Bay",
+        "length": "5 nights / 6 days",
+        "start": "2026-07-04T08:00:00Z",
+        "resort": "Coastal Breeze Resort, 4 stars",
+        "perPerson": "1420.00",
+        "image": "reef4.jpg",
+        "description": "<p>Enjoy private beach access, coastal wildlife tours, and world-class seafood dining.</p>"
+    },
+    {
+        "code": "TIDR260720",
+        "name": "Tidal Ridge",
+        "length": "7 nights / 8 days",
+        "start": "2026-07-20T08:00:00Z",
+        "resort": "Grand Horizon Villas, 5 stars",
+        "perPerson": "3100.00",
+        "image": "reef2.jpg",
+        "description": "<p>An exclusive island sanctuary surrounded by deep blue drop-offs and manta ray sanctuaries.</p>"
+    },
+    {
+        "code": "SHAR260805",
+        "name": "Shark Shoals",
+        "length": "4 nights / 5 days",
+        "start": "2026-08-05T08:00:00Z",
+        "resort": "Adventure Cove Hotel, 3 stars",
+        "perPerson": "920.00",
+        "image": "reef3.jpg",
+        "description": "<p>Thill-seekers dive into guided nurse shark swims and deep sea kayaking adventures.</p>"
+    },
+    {
+        "code": "PALR260818",
+        "name": "Palm Cay Reef",
+        "length": "6 nights / 7 days",
+        "start": "2026-08-18T08:00:00Z",
+        "resort": "Royal Coconut Inn, 4 stars",
+        "perPerson": "2100.00",
+        "image": "reef1.jpg",
+        "description": "<p>Lush coconut groves meet white sand beaches in this peaceful tropical paradise.</p>"
+    },
+    {
+        "code": "BLUR260901",
+        "name": "Blue Hole Abyss",
+        "length": "5 nights / 6 days",
+        "start": "2026-09-01T08:00:00Z",
+        "resort": "Deep Blue Suites, 4 stars",
+        "perPerson": "1650.00",
+        "image": "reef3.jpg",
+        "description": "<p>World-renowned diving excursion centered around natural oceanic sinkhole formations.</p>"
+    },
+    {
+        "code": "TURR260914",
+        "name": "Turtle Haven",
+        "length": "3 nights / 4 days",
+        "start": "2026-09-14T08:00:00Z",
+        "resort": "Sea Turtle Lodge, 3 stars",
+        "perPerson": "710.00",
+        "image": "reef2.jpg",
+        "description": "<p>Snorkel alongside endangered green sea turtles in protected coastal waters.</p>"
+    },
+    {
+        "code": "ISLR261001",
+        "name": "Isla Reef Sanctuary",
+        "length": "8 nights / 9 days",
+        "start": "2026-10-01T08:00:00Z",
+        "resort": "Sanctuary Island Resort, 5 stars",
+        "perPerson": "4200.00",
+        "image": "reef4.jpg",
+        "description": "<p>An ultra-luxury eco-resort complete with private spa treatments and custom yacht charters.</p>"
+    },
+    {
+        "code": "WHIR261015",
+        "name": "Whispering Reef",
+        "length": "4 nights / 5 days",
+        "start": "2026-10-15T08:00:00Z",
+        "resort": "Quiet Waters Hotel, 3 stars",
+        "perPerson": "840.00",
+        "image": "reef1.jpg",
+        "description": "<p>Escape the crowds in a serene setting featuring gentle tides and tranquil sandy shores.</p>"
+    },
+    {
+        "code": "MANR261102",
+        "name": "Manta Point",
+        "length": "6 nights / 7 days",
+        "start": "2026-11-02T08:00:00Z",
+        "resort": "Oceanic Pearl, 4 stars",
+        "perPerson": "1950.00",
+        "image": "reef2.jpg",
+        "description": "<p>Night diving experiences under bioluminescent waters with graceful giant manta rays.</p>"
+    },
+    {
+        "code": "EMER261118",
+        "name": "Emerald Trench",
+        "length": "5 nights / 6 days",
+        "start": "2026-11-18T08:00:00Z",
+        "resort": "Jade Coast Villas, 4 stars",
+        "perPerson": "1580.00",
+        "image": "reef4.jpg",
+        "description": "<p>Unwind amidst dramatic underwater topography, sea caverns, and rich marine life.</p>"
+    },
+    {
+        "code": "BARR261201",
+        "name": "Barracuda Shoals",
+        "length": "4 nights / 5 days",
+        "start": "2026-12-01T08:00:00Z",
+        "resort": "Seaside Anchor Inn, 3 stars",
+        "perPerson": "780.00",
+        "image": "reef3.jpg",
+        "description": "<p>Great fishing and diving spot famous for large schooling sea life and outer reef walls.</p>"
+    },
+    {
+        "code": "CASR261215",
+        "name": "Castaway Key",
+        "length": "7 nights / 8 days",
+        "start": "2026-12-15T08:00:00Z",
+        "resort": "Pirate's Cove Luxury Resort, 5 stars",
+        "perPerson": "3250.00",
+        "image": "reef1.jpg",
+        "description": "<p>Spend the holidays on a private tropical cay with gourmet dining and open water sports.</p>"
+    },
+    {
+        "code": "NEPR270105",
+        "name": "Neptune's Garden",
+        "length": "5 nights / 6 days",
+        "start": "2027-01-05T08:00:00Z",
+        "resort": "Atlantis Bay Hotel, 4 stars",
+        "perPerson": "1490.00",
+        "image": "reef2.jpg",
+        "description": "<p>A underwater wonderland featuring soft sea fans, vibrant sponges, and colorful reef fish.</p>"
+    },
+    {
+        "code": "SILR270120",
+        "name": "Silver Reef",
+        "length": "4 nights / 5 days",
+        "start": "2027-01-20T08:00:00Z",
+        "resort": "Moonlight Sands, 3 stars",
+        "perPerson": "830.00",
+        "image": "reef3.jpg",
+        "description": "<p>Known for its shimmering white sand and peaceful sunset paddleboard excursions.</p>"
+    },
+    {
+        "code": "VICT270202",
+        "name": "Victory Reef",
+        "length": "6 nights / 7 days",
+        "start": "2027-02-02T08:00:00Z",
+        "resort": "Triumph Island Club, 4 stars",
+        "perPerson": "1890.00",
+        "image": "reef4.jpg",
+        "description": "<p>A high-energy ocean resort offering jet skiing, parasailing, and vibrant island nightlife.</p>"
+    },
+    {
+        "code": "SERR270218",
+        "name": "Serenity Atoll",
+        "length": "7 nights / 8 days",
+        "start": "2027-02-18T08:00:00Z",
+        "resort": "Tranquil Bay Wellness Resort, 5 stars",
+        "perPerson": "2980.00",
+        "image": "reef1.jpg",
+        "description": "<p>A wellness-focused island retreat featuring oceanfront yoga, spa treatments, and organic dining.</p>"
+    }
+]

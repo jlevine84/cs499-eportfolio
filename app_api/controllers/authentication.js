@@ -53,6 +53,7 @@ const login = (req, res) => {
 
         // Delegate authentication to passport module
         passport.authenticate("local", (err, user, info) => {
+            console.log("Passport Auth Result:", { err, user, info }); // <-- Add this debug line
             // If authentication error occurs, return the error
             if (err) { return res.status(404).json(err); }
 
