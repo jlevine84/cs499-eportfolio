@@ -107,43 +107,50 @@ const tripsAddTrip = async (req, res) => {
 // PUT endpoint: /trips/{code} - Edit a specific trip
 const tripsUpdateTrip = async (req, res) => {
     try {
-        console.log("Locating and updating trip code:", req.params.tripCode);
-        
+        // Locate existing document to record state prior to update
         const existingTrip = await Model.findOne({ "code": req.params.tripCode }).exec();
 
         if (!existingTrip) {
             return res.status(404).json({ error: "Trip code not found to update." });
         }
 
-        const query = await Model.findOneAndUpdate(
-            { "code": req.params.tripCode },
-            {
-                code: req.body.code,
-                name: req.body.name,
-                length: req.body.length,
-                start: req.body.start,
-                resort: req.body.resort,
-                perPerson: req.body.perPerson,
-                image: req.body.image,
-                description: req.body.description
-            },
-            { new: true, runValidators: true }
-        ).exec();
+        const previousPrice = existingTrip.perPerson;
 
-        // Audit Log Entry
-        await Log.create({
+        // Perform direct MongoDB collection update to bypass mongoose-sequence hooks
+        await Model.collection.updateOne(
+            { code: req.params.tripCode },
+            {
+                $set: {
+                    code: req.body.code,
+                    name: req.body.name,
+                    length: req.body.length,
+                    start: new Date(req.body.start),
+                    resort: req.body.resort,
+                    perPerson: req.body.perPerson,
+                    image: req.body.image,
+                    description: req.body.description
+                }
+            }
+        );
+
+        // Retrieve updated record state for return payload
+        const updatedTrip = await Model.findOne({ "code": req.body.code || req.params.tripCode }).exec();
+
+        // Native driver insertion for Audit Log to bypass schema sequence hooks
+        await Log.collection.insertOne({
             user: req.user ? req.user.email : "System",
             action: "UPDATE",
             endpoint: `PUT /api/trips/${req.params.tripCode}`,
             status: "200 OK",
-            description: `Modified details for package ${query.code}`,
+            description: `Modified details for package ${updatedTrip.code}`,
             details: {
-                previousPrice: existingTrip.perPerson,
-                updatedPrice: query.perPerson
-            }
+                previousPrice: previousPrice,
+                updatedPrice: updatedTrip.perPerson
+            },
+            timeStamp: new Date()
         });
 
-        return res.status(200).json(query);
+        return res.status(200).json(updatedTrip);
 
     } catch (err) {
         console.error("Error updating trip:", err);

@@ -42,10 +42,15 @@ const getLogs = async (req, res) => {
     }
 };
 
-// GET endpoint: /logs/{id} - Get a single audit log entry by logID
+// GET endpoint: /logs/{id} - Get a single audit log entry by logID or _id
 const getLogById = async (req, res) => {
     try {
-        const log = await Log.findOne({ logID: req.params.id }).exec();
+        // Check if query parameter matches standard Mongo _id or custom logID
+        const query = mongoose.Types.ObjectId.isValid(req.params.id)
+            ? { _id: req.params.id }
+            : { logID: req.params.id };
+
+        const log = await Log.findOne(query).exec();
 
         if (!log) {
             return res.status(404).json({ error: "Audit log entry not found." });
@@ -61,16 +66,22 @@ const getLogById = async (req, res) => {
 // POST endpoint: /logs - Helper to manually record custom system events
 const createLog = async (req, res) => {
     try {
-        const newLog = new Log({
+        const logDoc = {
             user: req.user ? req.user.email : (req.body.user || "System"),
             action: req.body.action,
             endpoint: req.body.endpoint || "N/A",
             status: req.body.status || "INFO",
             description: req.body.description,
-            details: req.body.details || {}
-        });
+            details: req.body.details || {},
+            timeStamp: new Date()
+        };
 
-        const savedLog = await newLog.save();
+        // Use native driver insertOne to bypass mongoose-sequence hooks
+        const insertResult = await Log.collection.insertOne(logDoc);
+
+        // Fetch inserted document to return to client
+        const savedLog = await Log.findById(insertResult.insertedId).exec();
+
         return res.status(201).json(savedLog);
 
     } catch (err) {

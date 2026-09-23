@@ -40,6 +40,20 @@ app-trip-card {
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-app-trip-card:hover:not(.selected) {
-    transform: translateY(-2px);
+
+/* Inventory column containing toolbar, cards, and footer */
+.inventory-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cards-stack,
+.trip-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: none !important;
+    overflow-y: visible !important;
 }
