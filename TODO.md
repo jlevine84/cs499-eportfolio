@@ -15,8 +15,8 @@
     - Create Users data service
     - Mockup user management listing // Done
 - Routes for logs and users // Done
-- Loading notifications
-- Delete trip reimplementation  
+- Loading notifications 
+- Delete trip reimplementation  // Done
 - Redirect to login if not logged in
 - Component commenting updates // Done
 
@@ -26,14 +26,14 @@ Enhancement Plan: I will refactor the administrative interface from a basic grid
 ## Algorithms & Data Structures
 - Pagination mockup // Done
 - Pagination layout // Done
-- Data filters
+- Data filters // Done
 
 Enhancement Plan: To complement the refactored admin dashboard, I will replace the flat array query system with an efficient server-side pagination algorithm on the Express/Node.js API. By introducing limit-offset logic with MongoDB sorting, the backend will return fixed data pages (e.g., 10 trips per page) alongside pagination metadata (total pages, current page, total count), reducing time complexity from loading O(n) total items in browser memory down to O(k) where k is the page size.
 
 ## Database & Security
 - Data propagation
-- Access control enhancements
-    - Middleware setup
+- Access control enhancements // Done
+    - Middleware setup // Done
 - Create Logs schema // Done
 - User Management schema update // Done
 - controller and route updates

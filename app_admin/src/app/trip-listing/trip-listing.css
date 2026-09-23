@@ -1,3 +1,8 @@
+/* ==========================================================================
+   Form Validation & Status Styles
+   ========================================================================== */
+
+/* Validation Feedback Text */
 .feedback.valid {
     color: #16a34a;
     font-size: 0.75rem;
@@ -10,6 +15,7 @@
     margin-top: 0.25rem;
 }
 
+/* Header Form Status Indicator */
 .form-status.valid {
     color: #16a34a;
     font-weight: 600;
@@ -20,26 +26,87 @@
     font-weight: 600;
 }
 
+/* Invalid Input Fields */
 .form-control.is-invalid {
     border-color: #dc2626;
     background-color: #fef2f2;
 }
 
-/* Card active state styling */
+/* ==========================================================================
+   Form Action Button Layout
+   ========================================================================== */
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.primary-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px; /* Standardizes height across all buttons */
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+/* Danger Button (Delete) */
+.btn-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+/* ==========================================================================
+   Inventory Panel & Cards
+   ========================================================================== */
+
+/* Main Panel Layout */
+.inventory-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cards-stack,
+.trip-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
+/* Card Interactive States */
+app-trip-card {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
 app-trip-card.selected {
     display: block;
     border-radius: 10px;
     border-right: 8px solid #0284c7; 
     box-shadow: inset -3px 0 0 0 rgba(2, 133, 199, 0.783);
     transition: all 0.2s ease-in-out;
-}
-
-/* Optional hover state for interactive feedback */
-app-trip-card {
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-app-trip-card:hover:not(.selected) {
-    transform: translateY(-2px);
 }

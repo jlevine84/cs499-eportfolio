@@ -44,7 +44,7 @@ const register = async (req, res) => {
 };
 
 // POST method for /login endpoint - Handle login of user
-const login = (req, res) => {
+const login = (req, res, next) => {
     try {
         // Validate request body to ensure all required params are present
         if (!req.body.email || !req.body.password) {
@@ -53,6 +53,7 @@ const login = (req, res) => {
 
         // Delegate authentication to passport module
         passport.authenticate("local", (err, user, info) => {
+            console.log("Passport Auth Result:", { err, user, info }); // <-- Add this debug line
             // If authentication error occurs, return the error
             if (err) { return res.status(404).json(err); }
 
@@ -65,7 +66,7 @@ const login = (req, res) => {
 
             // Else, return unauthenticated error
             else { return res.status(401).json(info); }
-        })(req, res);
+        })(req, res, next);
     } catch (err) {
         // Log error to console and return a server error
         console.error("Error during user login execution:", err);
@@ -86,8 +87,9 @@ const verifyToken = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Contains _id, email, name, role
-        next();
+        next(); // Calling next() proceeds to tripsController.tripsUpdateTrip
     } catch (err) {
+        // Return JSON response directly instead of forwarding with next(err)
         return res.status(401).json({ "message": "Invalid or expired token." });
     }
 };

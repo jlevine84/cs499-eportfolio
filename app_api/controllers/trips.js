@@ -5,22 +5,67 @@ require("../models/log");  // Ensures audit log schema is loaded
 const Model = mongoose.model("trips"); // Unified model reference for all CRUD operations
 const Log = mongoose.model("logs");   // Audit log model reference
 
-// GET endpoint: /trips - Get a list of all trips
+// GET endpoint: /trips - Paginated & Sorted Trips
 const tripsList = async (req, res) => {
     try {
-        const query = await Model
-            .find({})
-            .exec();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 6;
+        const search = req.query.search || "";
+        const sort = req.query.sort || "name-asc";
 
-        // If no query response
-        if (!query || query.length === 0) {
-            return res.status(404).json({ error: "No trips found." });
+        const skip = (page - 1) * limit;
+
+        const query = search
+            ? {
+                  $or: [
+                      { name: { $regex: search, $options: "i" } },
+                      { code: { $regex: search, $options: "i" } }
+                  ]
+              }
+            : {};
+
+        // Parse sorting directive
+        let sortOption = {};
+        switch (sort) {
+            case "name-desc":
+                sortOption = { name: -1 };
+                break;
+            case "price-asc":
+                sortOption = { numericPrice: 1 };
+                break;
+            case "price-desc":
+                sortOption = { numericPrice: -1 };
+                break;
+            case "name-asc":
+            default:
+                sortOption = { name: 1 };
+                break;
         }
 
-        // Return all trips
-        return res.status(200).json(query);
+        // Use aggregation pipeline to cast string prices on the fly if needed
+        const trips = await Model.aggregate([
+            { $match: query },
+            { 
+                $addFields: { 
+                    numericPrice: { $toDouble: "$perPerson" } 
+                } 
+            },
+            { $sort: sortOption },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+
+        const totalRecords = await Model.countDocuments(query);
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return res.status(200).json({
+            trips,
+            currentPage: page,
+            totalPages,
+            totalRecords
+        });
     } catch (err) {
-        console.error("Error retrieving trips:", err);
+        console.error("Error fetching trips:", err);
         return res.status(500).json({ error: err.message });
     }
 };
@@ -32,7 +77,6 @@ const tripsFindByCode = async (req, res) => {
             .find({ "code": req.params.tripCode })
             .exec();
 
-        // If no query response
         if (!query || query.length === 0) {
             return res.status(404).json({ error: "Trip not found with provided code." });
         }
@@ -44,35 +88,47 @@ const tripsFindByCode = async (req, res) => {
     }
 };
 
+// Helper function to fetch the next sequential logID
+const getNextLogId = async () => {
+    const lastLog = await Log.findOne({}, { logID: 1 }).sort({ logID: -1 }).lean().exec();
+    return lastLog && typeof lastLog.logID === 'number' ? lastLog.logID + 1 : 1;
+};
+
 // POST endpoint: /trips - Add a new trip
 const tripsAddTrip = async (req, res) => {
     try {
-        // Instantiate a new trip record
-        const newTrip = new Model({
+        const tripDoc = {
             code: req.body.code,
             name: req.body.name,
             length: req.body.length,
-            start: req.body.start,
+            start: new Date(req.body.start),
             resort: req.body.resort,
             perPerson: req.body.perPerson,
             image: req.body.image,
             description: req.body.description
-        });
+        };
 
-        // Save to MongoDB
-        const savedTrip = await newTrip.save();
+        // Insert new trip via native driver
+        const insertResult = await Model.collection.insertOne(tripDoc);
 
-        // Generate audit log record
-        await Log.create({
+        // Fetch created document
+        const savedTrip = await Model.findById(insertResult.insertedId).exec();
+
+        // Compute next sequential logID to prevent unique constraint conflicts
+        const nextId = await getNextLogId();
+
+        // Native driver insertion for Audit Log with logID populated
+        await Log.collection.insertOne({
+            logID: nextId,
             user: req.user ? req.user.email : "System",
             action: "CREATE",
             endpoint: `POST /api/trips`,
             status: "201 Created",
             description: `Created new trip package: ${savedTrip.code}`,
-            details: { code: savedTrip.code, name: savedTrip.name }
+            details: { code: savedTrip.code, name: savedTrip.name },
+            timeStamp: new Date()
         });
 
-        // Return 201 Created status
         return res.status(201).json(savedTrip);
 
     } catch (err) {
@@ -84,44 +140,50 @@ const tripsAddTrip = async (req, res) => {
 // PUT endpoint: /trips/{code} - Edit a specific trip
 const tripsUpdateTrip = async (req, res) => {
     try {
-        console.log("Locating and updating trip code:", req.params.tripCode);
-        
-        // Find existing record first to compare values for audit logging
+        // Locate existing document to record state prior to update
         const existingTrip = await Model.findOne({ "code": req.params.tripCode }).exec();
 
         if (!existingTrip) {
             return res.status(404).json({ error: "Trip code not found to update." });
         }
 
-        const query = await Model.findOneAndUpdate(
-            { "code": req.params.tripCode },
-            {
-                code: req.body.code,
-                name: req.body.name,
-                length: req.body.length,
-                start: req.body.start,
-                resort: req.body.resort,
-                perPerson: req.body.perPerson,
-                image: req.body.image,
-                description: req.body.description
-            },
-            { new: true, runValidators: true }
-        ).exec();
+        const previousPrice = existingTrip.perPerson;
 
-        // Generate audit log record tracking price or general modification
-        await Log.create({
+        // Perform direct MongoDB collection update to bypass mongoose-sequence hooks
+        await Model.collection.updateOne(
+            { code: req.params.tripCode },
+            {
+                $set: {
+                    code: req.body.code,
+                    name: req.body.name,
+                    length: req.body.length,
+                    start: new Date(req.body.start),
+                    resort: req.body.resort,
+                    perPerson: req.body.perPerson,
+                    image: req.body.image,
+                    description: req.body.description
+                }
+            }
+        );
+
+        // Retrieve updated record state for return payload
+        const updatedTrip = await Model.findOne({ "code": req.body.code || req.params.tripCode }).exec();
+
+        // Native driver insertion for Audit Log to bypass schema sequence hooks
+        await Log.collection.insertOne({
             user: req.user ? req.user.email : "System",
             action: "UPDATE",
             endpoint: `PUT /api/trips/${req.params.tripCode}`,
             status: "200 OK",
-            description: `Modified details for package ${query.code}`,
+            description: `Modified details for package ${updatedTrip.code}`,
             details: {
-                previousPrice: existingTrip.perPerson,
-                updatedPrice: query.perPerson
-            }
+                previousPrice: previousPrice,
+                updatedPrice: updatedTrip.perPerson
+            },
+            timeStamp: new Date()
         });
 
-        return res.status(200).json(query);
+        return res.status(200).json(updatedTrip);
 
     } catch (err) {
         console.error("Error updating trip:", err);
@@ -129,25 +191,45 @@ const tripsUpdateTrip = async (req, res) => {
     }
 };
 
-// DELETE endpoint: /trips/{code} - Delete a specific trip
+// DELETE endpoint: /trips/{code} - Remove a trip package
 const tripsDeleteTrip = async (req, res) => {
     try {
-        const deletedTrip = await Model.findOneAndDelete({ "code": req.params.tripCode }).exec();
+        const tripCode = req.params.tripCode;
 
-        if (!deletedTrip) {
+        // Locate the trip package first to capture details for audit logging
+        const existingTrip = await Model.findOne({ code: tripCode }).exec();
+
+        if (!existingTrip) {
             return res.status(404).json({ error: "Trip code not found to delete." });
         }
 
-        // Generate audit log record
-        await Log.create({
+        // Perform native driver deletion to bypass mongoose hooks
+        const deleteResult = await Model.collection.deleteOne({ code: tripCode });
+
+        if (deleteResult.deletedCount === 0) {
+            return res.status(400).json({ error: "Failed to delete trip record." });
+        }
+
+        // Compute next logID sequence number
+        const nextLogId = await getNextLogId();
+
+        // Native driver insertion for Audit Log with logID populated
+        await Log.collection.insertOne({
+            logID: nextLogId,
             user: req.user ? req.user.email : "System",
             action: "DELETE",
-            endpoint: `DELETE /api/trips/${req.params.tripCode}`,
+            endpoint: `DELETE /api/trips/${tripCode}`,
             status: "200 OK",
-            description: `Deleted trip package: ${req.params.tripCode}`
+            description: `Deleted trip package: ${existingTrip.name} (${tripCode})`,
+            details: {
+                code: existingTrip.code,
+                name: existingTrip.name,
+                perPerson: existingTrip.perPerson
+            },
+            timeStamp: new Date()
         });
 
-        return res.status(200).json({ message: "Trip successfully deleted.", code: req.params.tripCode });
+        return res.status(200).json({ message: `Trip ${tripCode} deleted successfully.` });
 
     } catch (err) {
         console.error("Error deleting trip:", err);

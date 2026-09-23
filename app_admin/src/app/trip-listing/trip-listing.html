@@ -3,8 +3,18 @@
     <!-- Inventory Panel -->
     <div class="inventory-panel">
         <div class="toolbar">
-            <input type="text" class="search-input" placeholder="Search by name or code...">
-            <select><option>Sort By: Name</option><option>Sort By: Price</option></select>
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Search by name or code..." 
+                [value]="searchQuery()"
+                (input)="onSearch($event)">
+            <select class="sort-select" (change)="onSort($event)">
+                <option value="name-asc">Sort By: Name (A-Z)</option>
+                <option value="name-desc">Sort By: Name (Z-A)</option>
+                <option value="price-asc">Sort By: Price (Low to High)</option>
+                <option value="price-desc">Sort By: Price (High to Low)</option>
+            </select>
             <button class="btn btn-primary" (click)="addTrip()" style="flex: initial;">+ New Trip</button>
         </div>
         
@@ -98,8 +108,16 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Package Modifications</button>
-                    <button type="button" class="btn btn-secondary" (click)="onReset()">Reset</button>
+                    <!-- Primary & Secondary Form Actions -->
+                    <div class="primary-actions">
+                        <button type="submit" class="btn btn-primary">Save Package Modifications</button>
+                        <button type="button" class="btn btn-secondary" (click)="onReset()">Reset</button>
+                    </div>
+
+                    <!-- Destructive Action Isolated -->
+                    <button type="button" class="btn btn-danger" (click)="onDelete(selected.code)">
+                        Delete Package
+                    </button>
                 </div>
             </form>
         } @else {
@@ -109,13 +127,27 @@
         }
     </div>
 
-    <!-- Footer -->
+    <!-- Pagination Footer -->
     <div class="pagination-footer">
-        <div>Displaying 1 - {{ trips().length }} of {{ trips().length }} Total Travel Packages</div>
+        <div>Displaying {{ trips().length }} of {{ totalRecords() }} Total Travel Packages</div>
         <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">&lt; Previous Page</button>
-            <span>Page 1 of 1</span>
-            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Next Page &gt;</button>
+            <button 
+                class="btn btn-secondary" 
+                style="padding: 4px 10px; font-size: 12px;"
+                [disabled]="currentPage() === 1"
+                (click)="goToPage(currentPage() - 1)">
+                &lt; Previous Page
+            </button>
+
+            <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+
+            <button 
+                class="btn btn-secondary" 
+                style="padding: 4px 10px; font-size: 12px;"
+                [disabled]="currentPage() === totalPages()"
+                (click)="goToPage(currentPage() + 1)">
+                Next Page &gt;
+            </button>
         </div>
     </div>
 </div>
