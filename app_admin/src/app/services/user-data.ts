@@ -74,11 +74,15 @@ export class UserData {
             params = params.set('search', search);
         }
 
-        return this.http.get<PaginatedUsersResponse>(
+        return this.http.get<any>(
             `${this.baseUrl}/users`, 
             { ...this.getAuthHeaders(), params }
         ).pipe(
-            tap((res: PaginatedUsersResponse) => this.users.set(res.users))
+            tap((res: any) => {
+                // Check if response is a direct array or wrapped inside { users: [...] }
+                const userList = Array.isArray(res) ? res : (res.users || []);
+                this.users.set(userList);
+            })
         );
     }
 

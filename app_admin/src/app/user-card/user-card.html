@@ -1,0 +1,20 @@
+<div class="card p-3 border rounded-3 shadow-sm user-card-item">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <h5 class="fw-bold mb-1 fs-6 text-dark">{{ user.name || 'User Account' }}</h5>
+      <p class="text-muted mb-2 small">{{ user.email }}</p>
+      
+      <div class="d-flex gap-2 align-items-center">
+        <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+          {{ user.role === 'admin' ? 'Admin' : (user.role | titlecase) }}
+        </span>
+        <span 
+          class="badge text-capitalize" 
+          [ngClass]="user.status === 'inactive' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
+        >
+          {{ user.status || 'active' }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
