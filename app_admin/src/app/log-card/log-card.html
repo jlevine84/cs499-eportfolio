@@ -1,0 +1,52 @@
+<tr 
+  class="log-row align-middle" 
+  [class.expanded]="isExpanded()" 
+  (click)="toggleDetails()" 
+  style="cursor: pointer;"
+>
+  <td class="font-monospace text-muted py-2 ps-3">
+    <!-- Smooth Rotating Caret -->
+    <span 
+      *ngIf="log.description || log.details" 
+      class="caret-icon me-2 d-inline-block text-secondary"
+      [class.rotated]="isExpanded()"
+    >
+      ▶
+    </span>
+    {{ log.timeStamp | date:'yyyy-MM-dd HH:mm:ss' }}
+  </td>
+  <td class="py-2">
+    <strong *ngIf="log.user" class="text-dark">{{ log.user }}</strong>
+    <span *ngIf="!log.user" class="text-muted fst-italic">Unauthenticated</span>
+  </td>
+  <td class="py-2">
+    <span class="badge rounded-pill fw-semibold px-2 py-1" [ngClass]="getActionBadgeClass(log.action)">
+      {{ log.action }}
+    </span>
+  </td>
+  <td class="py-2">
+    <code class="endpoint-code">{{ log.endpoint }}</code>
+  </td>
+  <td class="py-2 pe-3">
+    <span class="badge rounded-pill fw-semibold px-2 py-1" [ngClass]="getStatusBadgeClass(log.status)">
+      {{ log.status }}
+    </span>
+  </td>
+</tr>
+
+<!-- Collapsible Details Row -->
+@if (isExpanded() && (log.description || log.details)) {
+  <tr class="details-row">
+    <td colspan="5" class="bg-light-subtle ps-5 py-3 pe-3 border-bottom">
+      <div class="details-container p-3 bg-white rounded border border-light-subtle shadow-sm">
+        <div *ngIf="log.description" class="mb-2 text-secondary small">
+          <strong class="text-dark">↳ Details:</strong> {{ log.description }}
+        </div>
+        <div *ngIf="log.details" class="mt-2">
+          <div class="text-muted extra-small mb-1 font-monospace text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Payload</div>
+          <pre class="json-block m-0 p-2 bg-dark text-light rounded font-monospace small">{{ log.details | json }}</pre>
+        </div>
+      </div>
+    </td>
+  </tr>
+}

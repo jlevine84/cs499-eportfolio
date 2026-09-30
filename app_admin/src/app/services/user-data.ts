@@ -14,6 +14,7 @@ export interface PaginatedUsersResponse {
 @Injectable({
     providedIn: 'root'
 })
+
 export class UserData {
 
     private readonly baseUrl = 'http://localhost:3000/api';

@@ -1,13 +1,23 @@
-<div class="p-4 bg-light">
+<div class="p-4 bg-light" *ngIf="isLoggedIn()">
     <!-- Filter Toolbar -->
     <div class="d-flex gap-2 mb-3 justify-content-between">
-        <input type="text" class="form-control form-control-sm w-50" placeholder="Search logs by user, action, or target endpoint...">
+        <input 
+            type="text" 
+            class="form-control form-control-sm w-50" 
+            placeholder="Search logs by user, action, or target endpoint..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="onSearchChange($event)"
+        >
         <div class="d-flex gap-2">
-            <select class="form-select form-select-sm w-auto">
-                <option>All Action Types</option>
-                <option>UPDATE_TRIP</option>
-                <option>USER_LOGIN</option>
-                <option>LOGIN_FAILED</option>
+            <select 
+                class="form-select form-select-sm w-auto"
+                [ngModel]="selectedAction()"
+                (ngModelChange)="onActionFilterChange($event)"
+            >
+                <option value="">All Action Types</option>
+                <option value="CREATE">CREATE</option>
+                <option value="UPDATE">UPDATE</option>
+                <option value="DELETE">DELETE</option>
             </select>
         </div>
     </div>
@@ -25,55 +35,50 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="font-monospace text-muted">2026-09-17 12:35:10</td>
-                    <td><strong>admin@travlr.com</strong></td>
-                    <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">UPDATE_TRIP</span></td>
-                    <td><code class="text-dark">PUT /api/trips/GALERE001</code></td>
-                    <td><span class="badge bg-success-subtle text-success">200 OK</span></td>
-                </tr>
-                <tr class="table-light">
-                    <td colspan="5" class="ps-4 py-1 text-muted small">
-                        ↳ <em>Details: Modified price field for package <code>GALERE001</code> ($799.00 → $850.00)</em>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="font-monospace text-muted">2026-09-17 12:10:04</td>
-                    <td><strong>admin@travlr.com</strong></td>
-                    <td><span class="badge bg-info-subtle text-info border border-info-subtle">USER_LOGIN</span></td>
-                    <td><code class="text-dark">POST /api/login</code></td>
-                    <td><span class="badge bg-success-subtle text-success">200 OK</span></td>
-                </tr>
-                <tr>
-                    <td class="font-monospace text-muted">2026-09-17 11:45:22</td>
-                    <td><span class="text-muted">Unauthenticated</span></td>
-                    <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">LOGIN_FAILED</span></td>
-                    <td><code class="text-dark">POST /api/login</code></td>
-                    <td><span class="badge bg-danger-subtle text-danger">401 Unauthorized</span></td>
-                </tr>
-                <tr class="table-light">
-                    <td colspan="5" class="ps-4 py-1 text-danger small">
-                        ↳ <em>Details: Failed authentication attempt for username <code>jane@travlr.com</code> (Invalid Hash)</em>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="font-monospace text-muted">2026-09-17 10:15:00</td>
-                    <td><strong>Mongoose Middleware</strong></td>
-                    <td><span class="badge bg-secondary-subtle text-secondary border">DB_AUDIT_LOG</span></td>
-                    <td><code class="text-dark">Collection: trips</code></td>
-                    <td><span class="badge bg-success-subtle text-success">Logged</span></td>
-                </tr>
+                @for (logEntry of logs(); track logEntry.logID || logEntry._id || $index) {
+                    <app-log-card [log]="logEntry"></app-log-card>
+                } @empty {
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            No audit logs found matching your criteria.
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 
     <!-- Pagination Bar -->
-    <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
-        <div>Displaying 4 of 48 Log Entries</div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary py-0 px-2">&lt; Prev</button>
-            <span>Page 1 of 12</span>
-            <button class="btn btn-sm btn-outline-secondary py-0 px-2">Next &gt;</button>
+    @if (totalRecords() > 0) {
+        <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
+            <div>
+                Displaying {{ logs().length }} of {{ totalRecords() }} Log Entries
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <button 
+                    class="btn btn-sm btn-outline-secondary py-0 px-2"
+                    [disabled]="currentPage() <= 1"
+                    (click)="changePage(currentPage() - 1)"
+                >
+                    &lt; Prev
+                </button>
+                <span>Page {{ currentPage() }} of {{ totalPages() }}</span>
+                <button 
+                    class="btn btn-sm btn-outline-secondary py-0 px-2"
+                    [disabled]="currentPage() >= totalPages()"
+                    (click)="changePage(currentPage() + 1)"
+                >
+                    Next &gt;
+                </button>
+            </div>
         </div>
+    }
+</div>
+
+<!-- Unauthenticated Fallback Notice -->
+<div *ngIf="!isLoggedIn()" class="p-5 text-center text-muted">
+    <div class="alert alert-warning d-inline-block px-4 py-3 border">
+        <i class="bi bi-shield-lock me-2"></i>
+        Access Restricted. Please log in to view system audit logs.
     </div>
 </div>

@@ -1,0 +1,54 @@
+:host {
+  display: contents;
+}
+
+/* Row Hover & Selection State */
+.log-row {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.log-row:hover {
+  background-color: rgba(0, 0, 0, 0.025) !important;
+}
+
+.log-row.expanded {
+  background-color: rgba(13, 110, 253, 0.03) !important;
+}
+
+/* Caret Icon Rotation */
+.caret-icon {
+  font-size: 0.75rem;
+  transition: transform 0.2s ease-in-out;
+  user-select: none;
+}
+
+.caret-icon.rotated {
+  transform: rotate(90deg);
+}
+
+/* Endpoint Tag Styling */
+.endpoint-code {
+  color: #2b3035;
+  background-color: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  font-size: 0.85em;
+}
+
+/* Expanded Payload Styling */
+.details-container {
+  border-left: 3px solid #0d6efd !important;
+}
+
+.json-block {
+  font-size: 0.8rem;
+  max-height: 220px;
+  overflow-y: auto;
+  line-height: 1.4;
+  tab-size: 2;
+}
+
+.extra-small {
+  font-size: 0.7rem;
+}

@@ -11,11 +11,23 @@ const getLogs = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
         const actionFilter = req.query.action;
+        const searchTerm = req.query.search ? req.query.search.trim() : "";
 
         // Build filter object
         let filter = {};
+        
         if (actionFilter) {
             filter.action = actionFilter.toUpperCase();
+        }
+
+        // Add case-insensitive regex search across multiple fields
+        if (searchTerm) {
+            filter.$or = [
+                { user: { $regex: searchTerm, $options: "i" } },
+                { action: { $regex: searchTerm, $options: "i" } },
+                { endpoint: { $regex: searchTerm, $options: "i" } },
+                { description: { $regex: searchTerm, $options: "i" } }
+            ];
         }
 
         // Retrieve log records sorted by most recent first
