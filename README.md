@@ -1,28 +1,60 @@
-# CS-465 Full Stack Development with MEAN
+# CS499 - Culminating Experience 
 
-## Architecture
-- **Compare and contrast the types of frontend development you used in your full stack project, including Express HTML, JavaScript, and the single-page application (SPA).**
-  
-  In this project, the customer-facing frontend uses Express with Handlebars for server-side rendering (SSR), meaning the server builds a completely new HTML page from scratch and sends it to the browser on every single click. In contrast, the administrative workspace is built as an Angular Single-Page Application (SPA), which uses client-side rendering (CSR). The Angular SPA downloads a single layout shell and a JavaScript bundle just once, using its own router to surgically swap out specific DOM fragments in real time without ever forcing a slow browser refresh.
-  
-- **Why did the backend use a NoSQL MongoDB database?**
-  
-  The backend utilizes MongoDB because its document-based, schema-flexible structure perfectly matches the object-oriented nature of JavaScript and the dynamic requirements of a travel application. Unlike rigid SQL databases that require complex relational joins across multiple tables, MongoDB allows us to store an entire trip package—including names, resorts, pricing, images, and HTML descriptions—as a single, self-contained document that map directly to our frontend data models.
+**Project:** Travlr Getaways Administrative Portal  
+**Artifact:** User Management & Authentication Module  
 
-## Functionality
-- **How is JSON different from Javascript and how does JSON tie together the frontend and backend development pieces?**
-  
-  JavaScript is a full programming language used to build logic, execute functions, and manipulate applications, whereas JSON (JavaScript Object Notation) is strictly a lightweight, text-based data format used to store and exchange information. JSON acts as the universal language across the entire MEAN stack bridge; it allows the MongoDB database, the Express API, and the Angular SPA to seamlessly pass raw data payloads back and forth regardless of how different their individual internal architectures are.
-- **Provide instances in the full stack process when you refactored code to improve functionality and efficiencies, and name the benefits that come from reusable user interface (UI) components.**
-  
-  A major full-stack refactor occurred when moving from legacy, class-based middleware to Angular’s modern Functional Interceptors (HttpInterceptorFn). By using inject(Authentication) right inside the stream instead of a heavy constructor class, we vastly simplified token management, improved execution speed, and made it easy to securely clone and append JWT headers to outgoing HTTP requests. Additionally, building reusable UI components like the app-trip-card provided massive benefits: it eliminated code duplication by allowing a single component template to render endless trips using data binding, and ensured that when we added authentication rules to hide the "Edit Trip" button, the security logic applied globally and instantly across the app.
+---
 
-## Testing
-- **Methods for request and retrieval necessitate various types of API testing of endpoints, in addition to the difficulties of testing with added layers of security. Explain your understanding of methods, endpoints, and security in a full stack application.**
-  
-  Full-stack development relies on specific HTTP methods mapped to API endpoints (like GET /api/trips to retrieve data or PUT /api/trips/:code to update it). Testing this pipeline requires a two-step process: first, isolating the Express endpoints using tools like Postman to verify database mutations and raw JSON responses, and second, testing frontend integration using browser Developer Tools to watch live network traffic. Adding security layers like Passport authentication and JWTs introduces testing challenges, as requests will immediately fail with 401 Unauthorized errors unless the authentication order-of-operations is perfect. We solved this by ensuring dotenv.config() loaded environment variables at the absolute top of app.js and using a functional interceptor to automatically attach the required Bearer tokens to secure outgoing headers.
+## 1. Artifact Description
 
-## Reflection
-- **How has this course helped you in reaching your professional goals? What skills have you learned, developed, or mastered in this course to help you become a more marketable candidate in your career field?**
-  
-  This course was a massive milestone in my professional goals, transforming my understanding of how disconnected frontend and backend systems communicate in production environments. Through hands-on troubleshooting, I mastered state management using modern Angular Signals, implemented clean control flow architecture using the new template @if and @for notations, and gained deep practical experience securing API pipelines with Passport and JSON Web Tokens (JWT). Having the ability to architect, debug, and connect an independent Node/Express REST API to a secure, decoupled SPA makes me a highly versatile and marketable full-stack engineer ready for modern enterprise development.
+This artifact is the **System User Management Module** for the *Travlr Getaways* full-stack web application. Built using an Angular single-page frontend connected to a Node.js/Express REST API and MongoDB backend, the module serves as the administrative control hub for platform access. 
+
+Originally created during CS-465 (Full Stack I), the module provides complete CRUD functionality for managing administrative and editor access across the application:
+* **Account Creation:** Secure creation of user credentials with designated roles.
+* **Filter & Search:** Real-time filtering by search query or role (`Admin` vs. `Editor`).
+* **Interactive Account Editing:** In-line editing of account privileges and operational status (`Active` vs. `Inactive`).
+* **Account Removal:** Secure deletion workflows with administrative safety prompts.
+
+---
+
+## 2. Justification for ePortfolio
+
+I selected this artifact for inclusion in my ePortfolio because it showcases my ability to design, refactor, and implement modern full-stack application interfaces using industry-standard architecture patterns. 
+
+### Key Technical Competencies Demonstrated:
+* **Modern Angular State Management:** Utilized Angular Signals (`signal`, `computed`) to manage reactive user filters, selection states, and form inputs smoothly without excessive boilerplate.
+* **Component-Driven UI/UX Design:** Refactored a static tabular view into a responsive master-detail pattern with dynamic side panels, improving usability and alignment with existing inventory tools.
+* **REST API Integration & Data Binding:** Enhanced payload data flows, handling async HTTP responses cleanly while managing error states and validation feedback directly within the user interface.
+* **Host Binding & Reactive DOM Manipulations:** Implemented Angular host bindings (`@HostBinding`, `@HostListener`) for clean component encapsulation and row/card interaction styles.
+
+---
+
+## 3. Course Outcomes & Plan Updates
+
+This enhancement directly aligned with and satisfied the target learning outcomes defined in Module One:
+
+| Planned Outcome | Implementation & Fulfillment |
+| :--- | :--- |
+| **Demonstrate Software Design Principles** | Applied modular component structures, separating list/card components (`UserCard`) from container layout and state management (`UserListing`). |
+| **Implement Robust Full-Stack Workflows** | Enhanced API error handling, signal-driven form resets, and reactive state updates across create/edit operations. |
+| **User Experience & Responsive Layouts** | Corrected grid containers and component styles using Bootstrap 5 to deliver a side-by-side master-detail layout across varying screen sizes. |
+
+*Outcome Coverage Updates:* The enhancement verified that edge-case handling—such as null state initializations, conditional form panels, and granular permissions—is critical when demonstrating production-ready applications. No major plan updates were necessary as all targets were satisfied.
+
+---
+
+## 4. Reflection on Enhancement & Learning
+
+Refactoring this artifact was a valuable exercise in converting static visual mockups into clean, reactive frontend components. The primary challenge involved maintaining layout consistency across Bootstrap's grid system while modularizing Angular host elements—specifically preventing nested table/card grid stacking issues and ensuring the details panel remained conditionally hidden until explicit user selection.
+
+Working through these structural layout and state challenges deepened my understanding of Angular's component life cycle, host element behavior, and reactive signal workflows, making me significantly more confident in delivering clean, intuitive web applications.
+
+---
+
+## Tech Stack
+
+* **Frontend:** Angular (Standalone Components, Signals, Reactive Form bindings)
+* **Styling:** Bootstrap 5, Custom CSS
+* **Backend:** Node.js, Express.js
+* **Database:** MongoDB / Mongoose ODM
+* **Authentication:** JWT (JSON Web Tokens)
